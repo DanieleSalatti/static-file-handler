@@ -187,6 +187,7 @@ class StaticFileHandler {
           
         case FileSystemEntityType.DIRECTORY:
           // If directory, serve as such.
+          // @todo: if the directory contains an index.html file we should serve that one
           serveDir(new Directory.fromPath(path), request);
           break;
           
