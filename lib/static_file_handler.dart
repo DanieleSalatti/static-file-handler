@@ -52,7 +52,7 @@ class StaticFileHandler {
    * will be listed in bullet-form, with a link to each element.
    */
   void serveDir(Directory dir, HttpRequest request) {
-    var response = request.response;
+    HttpResponse response = request.response;
   
     response.write("<html><head>");
     response.write("<title>${request.uri}</title>");
@@ -61,8 +61,8 @@ class StaticFileHandler {
   
     dir.list().listen(
         (entity) {
-          var name = new Path(entity.path).filename;
-          var href = new Path(request.uri.path).append(name);
+          String name = new Path(entity.path).filename;
+          Path href = new Path(request.uri.path).append(name);
           response.write("<li><a href='$href'>$name</a></li>");
         },
         onDone: () {
@@ -79,7 +79,7 @@ class StaticFileHandler {
    * a smaller part of the [file] will be streamed.
    */
   void serveFile(File file, HttpRequest request) {
-    var response = request.response;
+    HttpResponse response = request.response;
   
     // Callback used if file operations fails.
     void fileError(e) {
@@ -103,7 +103,7 @@ class StaticFileHandler {
         response.headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
         response.headers.set(HttpHeaders.LAST_MODIFIED, lastModified);
   
-        var ext = new Path(file.path).extension;
+        String ext = new Path(file.path).extension;
         if (EXT_TO_CONTENT_TYPE.containsKey(ext)) {
           response.headers.contentType =
               ContentType.parse(EXT_TO_CONTENT_TYPE[ext]);
@@ -115,10 +115,10 @@ class StaticFileHandler {
         }
   
         // If the Range header was received, handle it.
-        var range = request.headers.value("range");
+        String range = request.headers.value("range");
         if (range != null) {
           // We only support one range, where the standard support several.
-          var matches = new RegExp(r"^bytes=(\d*)\-(\d*)$").firstMatch(range);
+          Match matches = new RegExp(r"^bytes=(\d*)\-(\d*)$").firstMatch(range);
           // If the range header have the right format, handle it.
           if (matches != null) {
             // Serve sub-range.
@@ -155,7 +155,7 @@ class StaticFileHandler {
   
   void serve() {
     
-    var root = new Path(this._directory).canonicalize();
+    Path root = new Path(this._directory).canonicalize();
     if (!new Directory.fromPath(root).existsSync()) {
       print("Root path does not exist or is not a directory");
       exit(-1);
@@ -177,7 +177,7 @@ class StaticFileHandler {
                     return;
                   }
                   
-                  var path = root.append(Uri.decodeComponent(request.uri.path)).canonicalize();
+                  Path path = root.append(Uri.decodeComponent(request.uri.path)).canonicalize();
                    
                   FileSystemEntity.type(path.toString())
                       .then((type) {
