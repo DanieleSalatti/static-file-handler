@@ -6,7 +6,7 @@ import 'dart:io';
 
 class StaticFileHandler {
   
-  String _directory;
+  Path _root;
   int _port;
   
   const EXT_TO_CONTENT_TYPE = const {
@@ -32,16 +32,28 @@ class StaticFileHandler {
     "zip"     : "application/zip"
   };
   
-  
-  StaticFileHandler(this._directory, {port: 80}) {
+  /**
+   * This constructor is to be used when running the static file handler as a standalone app.
+   */
+  StaticFileHandler(directory, {port: 80}) {
     try {
       this._port = int.parse(port);
     } catch (e) {
       print("Bad port format");
       exit(-1);
     }
+    
+    _root = new Path(directory).canonicalize();
   }
-      
+  
+  /**
+   * This named constructor is to be used when using the static file handler within another
+   * Dart script.
+   */
+  StaticFileHandler.serveFolder(directory) {
+    _root = new Path(directory).canonicalize();
+  }
+  
   void errorHandler(error) {
     // Every error goes here. Add potential logger here.
   }
@@ -153,13 +165,47 @@ class StaticFileHandler {
     }, onError: fileError);
   }
   
+  void handleRequest(HttpRequest request) {
+    request.response.done.catchError(errorHandler);
+    
+    if (new Path(request.uri.path).segments().contains('..')) {
+      // Invalid path.
+      request.response.statusCode = HttpStatus.FORBIDDEN;
+      request.response.close();
+      return;
+    }
+    
+    Path path = _root.append(Uri.decodeComponent(request.uri.path)).canonicalize();
+    
+    FileSystemEntity.type(path.toString())
+    .then((type) {
+      switch (type) {
+        case FileSystemEntityType.FILE:
+          // If file, serve as such.
+          serveFile(new File.fromPath(path), request);
+          break;
+          
+        case FileSystemEntityType.DIRECTORY:
+          // If directory, serve as such.
+          serveDir(new Directory.fromPath(path), request);
+          break;
+          
+        default:
+          // File not found, fall back to 404.
+          request.response.statusCode = HttpStatus.NOT_FOUND;
+          request.response.write("File not found");
+          request.response.close();
+          break;
+      }
+    });
+  }
+  
   /**
    * Start the HttpServer
    */
   void serve() {
     
-    Path root = new Path(this._directory).canonicalize();
-    if (!new Directory.fromPath(root).existsSync()) {
+    if (!new Directory.fromPath(_root).existsSync()) {
       print("Root path does not exist or is not a directory");
       exit(-1);
     }
@@ -170,40 +216,7 @@ class StaticFileHandler {
           server.listen((request) {
             request.listen(
                 (_) { /* ignore post body */ },
-                onDone: () {
-                  request.response.done.catchError(errorHandler);
-  
-                  if (new Path(request.uri.path).segments().contains('..')) {
-                    // Invalid path.
-                    request.response.statusCode = HttpStatus.FORBIDDEN;
-                    request.response.close();
-                    return;
-                  }
-                  
-                  Path path = root.append(Uri.decodeComponent(request.uri.path)).canonicalize();
-                   
-                  FileSystemEntity.type(path.toString())
-                      .then((type) {
-                        switch (type) {
-                          case FileSystemEntityType.FILE:
-                            // If file, serve as such.
-                            serveFile(new File.fromPath(path), request);
-                            break;
-  
-                          case FileSystemEntityType.DIRECTORY:
-                            // If directory, serve as such.
-                            serveDir(new Directory.fromPath(path), request);
-                            break;
-  
-                          default:
-                            // File not found, fall back to 404.
-                            request.response.statusCode = HttpStatus.NOT_FOUND;
-                            request.response.write("File not found");
-                            request.response.close();
-                            break;
-                        }
-                      });
-                },
+                onDone: handleRequest(request),
                 onError: errorHandler,
                 cancelOnError: true);
           }, onError: errorHandler);
