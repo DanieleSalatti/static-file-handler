@@ -92,7 +92,7 @@ class StaticFileHandler {
       // If If-Modified-Since is present and file haven't changed, return 304.
       if (request.headers.ifModifiedSince != null &&
           !lastModified.isAfter(request.headers.ifModifiedSince)) {
-        response.statusCode = 304;
+        response.statusCode = HttpStatus.NOT_MODIFIED;
         response.close();
         return;
       }
@@ -136,7 +136,7 @@ class StaticFileHandler {
             response.headers.set(HttpHeaders.CONTENT_LENGTH, end - start);
   
             // Set 'Partial Content' status code.
-            response.statusCode = 206;
+            response.statusCode = HttpStatus.PARTIAL_CONTENT;
             response.headers.set(HttpHeaders.CONTENT_RANGE,
                                  "bytes $start-${end - 1}/$length");
   
@@ -153,6 +153,9 @@ class StaticFileHandler {
     }, onError: fileError);
   }
   
+  /**
+   * Start the HttpServer
+   */
   void serve() {
     
     Path root = new Path(this._directory).canonicalize();
@@ -172,7 +175,7 @@ class StaticFileHandler {
   
                   if (new Path(request.uri.path).segments().contains('..')) {
                     // Invalid path.
-                    request.response.statusCode = 403;
+                    request.response.statusCode = HttpStatus.FORBIDDEN;
                     request.response.close();
                     return;
                   }
@@ -194,7 +197,7 @@ class StaticFileHandler {
   
                           default:
                             // File not found, fall back to 404.
-                            request.response.statusCode = 404;
+                            request.response.statusCode = HttpStatus.NOT_FOUND;
                             request.response.write("File not found");
                             request.response.close();
                             break;
