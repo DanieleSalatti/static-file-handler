@@ -162,9 +162,9 @@ void main() {
                   request.response.close();
                   return;
                 }
-
-                var path = root.append(request.uri.path).canonicalize();
-
+                
+                var path = root.append(Uri.decodeComponent(request.uri.path)).canonicalize();
+                 
                 FileSystemEntity.type(path.toString())
                     .then((type) {
                       switch (type) {
