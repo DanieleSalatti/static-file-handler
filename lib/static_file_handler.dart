@@ -10,13 +10,26 @@ class StaticFileHandler {
   int _port;
   
   const EXT_TO_CONTENT_TYPE = const {
-      "txt": "text/plain; charset=utf-8",  // Assumes UTF-8 files.
-      "json": "application/json",
-      "webm": "video/webm",
-      "mp4": "video/mp4",
-      "html": "text/html; charset=utf-8",  // Assumes UTF-8 files.
-      "png": "image/png",
-      "jpg": "image/jpeg" };
+    "bz"      : "application/x-bzip",
+    "bz2"     : "application/x-bzip2",
+    "dart"    : "application/dart",
+    "exe"     : "application/octet-stream",
+    "gif"     : "image/gif",
+    "gz"      : "application/x-gzip",
+    "html"    : "text/html; charset=utf-8",  // Assumes UTF-8 files.
+    "jpg"     : "image/jpeg",
+    "js"      : "application/javascript", 
+    "json"    : "application/json",
+    "mp3"     : "audio/mpeg",
+    "mp4"     : "video/mp4",
+    "pdf"     : "application/pdf",
+    "png"     : "image/png",
+    "tar.gz"  : "application/x-tar",
+    "tgz"     : "application/x-tar",
+    "txt"     : "text/plain; charset=utf-8",  // Assumes UTF-8 files.
+    "webm"    : "video/webm",
+    "zip"     : "application/zip"
+  };
   
   
   StaticFileHandler(this._directory, {port: 80}) {
