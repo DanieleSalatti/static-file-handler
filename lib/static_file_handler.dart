@@ -9,7 +9,7 @@ class StaticFileHandler {
   Path _root;
   int _port;
   
-  const EXT_TO_CONTENT_TYPE = const {
+  final _extToContentType = {
     "bz"      : "application/x-bzip",
     "bz2"     : "application/x-bzip2",
     "dart"    : "application/dart",
@@ -94,6 +94,14 @@ class StaticFileHandler {
         onError: errorHandler);
   }
   
+  /**
+   * Add the MIME types [types] to the list of supported MIME types
+   */
+  void addMIMETypes(Map<String, String> types){
+    types.forEach((key, value) {
+      _extToContentType[key] = value;
+    });
+  }
   
   /**
    * Serve the file [file] to the [request]. The content of the file will be
@@ -124,11 +132,11 @@ class StaticFileHandler {
         // Always set Accept-Ranges and Last-Modified headers.
         response.headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
         response.headers.set(HttpHeaders.LAST_MODIFIED, lastModified);
-  
+        
         String ext = new Path(file.path).extension;
-        if (EXT_TO_CONTENT_TYPE.containsKey(ext)) {
+        if (_extToContentType.containsKey(ext)) {
           response.headers.contentType =
-              ContentType.parse(EXT_TO_CONTENT_TYPE[ext]);
+              ContentType.parse(_extToContentType[ext]);
         }
   
         if (request.method == 'HEAD') {
