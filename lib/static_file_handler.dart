@@ -159,6 +159,14 @@ class StaticFileHandler {
           }
         }
   
+        /*
+         * Send content length if using HTTP/1.0
+         * When using HTTP/1.1 chunked transfer encoding is used
+         */
+        if (request.protocolVersion == "1.0") {
+          response.headers.set(HttpHeaders.CONTENT_LENGTH, length);
+        }
+        
         // Fall back to sending the entire content.
         file.openRead().pipe(response).catchError(errorHandler);
       }, onError: fileError);
