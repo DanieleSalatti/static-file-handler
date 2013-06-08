@@ -12,7 +12,17 @@ void main() {
   }
   
   String path = options.arguments[0];
-  String port = options.arguments[1];
+  String sPort = options.arguments[1];
+  
+  int port;
+  
+  try {
+    port = int.parse(sPort);
+  } catch (e) {
+    print("Invalid port");
+    print("Usage: ${options.script} <root-path> <port>");
+    exit(-1);
+  }
   
   var fileHandler = new StaticFileHandler(path, port: port);
   

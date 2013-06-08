@@ -35,15 +35,18 @@ class StaticFileHandler {
   /**
    * This constructor is to be used when running the static file handler as a standalone app.
    */
-  StaticFileHandler(directory, {port: 80}) {
-    try {
-      this._port = int.parse(port);
-    } catch (e) {
-      print("Bad port format");
+  StaticFileHandler(String directory, {int port: 80}) {
+    // If port == 0 the OS will pick a random available port for us
+    if (65535 < port || 0 > port ) {
+      print("Invalid port");
       exit(-1);
     }
     
+    _port = port;
+    
     _root = new Path(directory).canonicalize();
+    
+    checkDir();
   }
   
   /**
@@ -52,12 +55,19 @@ class StaticFileHandler {
    */
   StaticFileHandler.serveFolder(directory) {
     _root = new Path(directory).canonicalize();
+    checkDir();
   }
-  
+
   void errorHandler(error) {
     // Every error goes here. Add potential logger here.
   }
-  
+
+  void checkDir() {
+    if (!new Directory.fromPath(_root).existsSync()) {
+      print("Root path does not exist or is not a directory");
+      exit(-1);
+    }
+  }
   
   /**
    * Serve the directory [dir] to the [request]. The content of the directory
@@ -213,15 +223,11 @@ class StaticFileHandler {
    * Start the HttpServer
    */
   void serve() {
-    
-    if (!new Directory.fromPath(_root).existsSync()) {
-      print("Root path does not exist or is not a directory");
-      exit(-1);
-    }
   
     // Start the HttpServer.
     HttpServer.bind("0.0.0.0", this._port)
         .then((server) {
+          print ("Listening on port ${server.port}");
           server.listen((request) {
             request.listen(
                 (_) { /* ignore post body */ },
