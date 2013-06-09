@@ -184,7 +184,7 @@ class StaticFileHandler {
         if (request.protocolVersion == "1.0") {
           response.headers.set(HttpHeaders.CONTENT_LENGTH, length);
         }
-        
+
         // Fall back to sending the entire content.
         file.openRead().pipe(response).catchError(errorHandler);
       }, onError: fileError);
@@ -213,8 +213,11 @@ class StaticFileHandler {
           
         case FileSystemEntityType.DIRECTORY:
           // If directory, serve as such.
-          // @todo: if the directory contains an index.html file we should serve that one
-          serveDir(new Directory.fromPath(path), request);
+          if (new File.fromPath(path.append("index.html")).existsSync()) {
+            serveFile(new File.fromPath(path.append("index.html")), request);
+          } else {
+            serveDir(new Directory.fromPath(path), request);
+          }
           break;
           
         default:
