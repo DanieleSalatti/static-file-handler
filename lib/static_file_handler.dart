@@ -113,7 +113,7 @@ class StaticFileHandler {
   
     // Callback used if file operations fails.
     void fileError(e) {
-      response.statusCode = 404;
+      response.statusCode = HttpStatus.NOT_FOUND;
       response.close();
       errorHandler(e);
     }
