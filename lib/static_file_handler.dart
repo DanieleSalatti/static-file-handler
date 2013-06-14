@@ -1,7 +1,3 @@
-//COMPLETELY UNTESTED, USE AT YOUR OWN RISK
-
-//Licensed under BSD: https://code.google.com/google_bsd_license.html
-
 import 'dart:io';
 
 class StaticFileHandler {
