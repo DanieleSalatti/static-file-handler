@@ -1,4 +1,9 @@
 name: dart_static_file_handler
-description: A sample command-line application
+version: 0.1.0
+author: Daniele Salatti
+description: A static file Web server written in Dart
+environment:
+  sdk: '>=0.5.13'
+
 #dependencies:
 #  unittest: any
