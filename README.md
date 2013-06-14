@@ -16,7 +16,7 @@ bin/static_file_handler.dart <root-path> <port>
 To import the library as a package in your Dart application:
 
 ```dart
-StaticFileHandler fileHandler = new StaticFileHandler(basePath, port:"3500");
+StaticFileHandler fileHandler = new StaticFileHandler.serveFolder(basePath);
 
 fileHandler.handleRequest(httpRequest);
 ```
