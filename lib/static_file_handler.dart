@@ -94,9 +94,7 @@ class StaticFileHandler {
    * Add the MIME types [types] to the list of supported MIME types
    */
   void addMIMETypes(Map<String, String> types){
-    types.forEach((key, value) {
-      _extToContentType[key] = value;
-    });
+    _extToContentType.addAll(types);
   }
   
   /**
