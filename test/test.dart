@@ -19,7 +19,7 @@ main() {
     
     setUp(() {
       fileHandler = new StaticFileHandler(directory, port:port);
-      return fileHandler.serve();
+      return fileHandler.start();
     });
     
     tearDown(() {

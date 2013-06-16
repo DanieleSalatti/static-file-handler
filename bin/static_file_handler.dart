@@ -26,5 +26,5 @@ void main() {
   
   var fileHandler = new StaticFileHandler(path, port: port);
   
-  fileHandler.serve();
+  fileHandler.start();
 }

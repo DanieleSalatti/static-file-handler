@@ -231,7 +231,7 @@ class StaticFileHandler {
   /**
    * Start the HttpServer
    */
-  Future<bool> serve() {
+  Future<bool> start() {
     var completer = new Completer();
     // Start the HttpServer.
     HttpServer.bind("0.0.0.0", this._port)
