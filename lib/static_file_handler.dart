@@ -1,3 +1,5 @@
+library static_file_handler;
+
 import 'dart:async';
 import 'dart:io';
 
