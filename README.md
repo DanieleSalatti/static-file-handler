@@ -4,6 +4,8 @@ dart-static-file-handler
 A static file Web server written in Dart.
 It can be used as a stand-alone command line tool or imported as a package in a Dart application.
 
+[![Build Status](https://drone.io/github.com/DanieleSalatti/dart-static-file-handler/status.png)](https://drone.io/github.com/DanieleSalatti/dart-static-file-handler/latest)
+
 Usage
 -----
 
