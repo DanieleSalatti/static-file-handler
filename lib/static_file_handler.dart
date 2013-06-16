@@ -1,10 +1,14 @@
+import 'dart:async';
 import 'dart:io';
 
 class StaticFileHandler {
   
+  HttpServer _server;
   Path _root;
   int _port;
-  
+
+  int get port => _port;
+
   final _extToContentType = {
     "bz"      : "application/x-bzip",
     "bz2"     : "application/x-bzip2",
@@ -227,19 +231,30 @@ class StaticFileHandler {
   /**
    * Start the HttpServer
    */
-  void serve() {
-  
+  Future<bool> serve() {
+    var completer = new Completer();
     // Start the HttpServer.
     HttpServer.bind("0.0.0.0", this._port)
         .then((server) {
-          print ("Listening on port ${server.port}");
-          server.listen((request) {
+          _server = server;
+          print ("Listening on port ${_server.port}");
+          _server.listen((request) {
             request.listen(
                 (_) { /* ignore post body */ },
                 onDone: handleRequest(request),
                 onError: errorHandler,
                 cancelOnError: true);
           }, onError: errorHandler);
+          completer.complete(true);
         });
+    return completer.future;
+  }
+  
+  /**
+   * Stop the HttpServer
+   */
+  void stop() {
+    print("Stop");
+    _server.close();
   }
 }
