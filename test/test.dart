@@ -12,7 +12,7 @@ main() {
   
   StaticFileHandler fileHandler;
   int port = 3500;
-  String directory = './www';
+  String directory = './test/www';
   HttpClient client = new HttpClient();
   
   group('Server', () {
