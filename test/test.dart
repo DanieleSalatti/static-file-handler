@@ -13,12 +13,13 @@ main() {
   StaticFileHandler fileHandler;
   int port = 3500;
   String directory = './test/www';
+  String ip = '0.0.0.0';
   HttpClient client = new HttpClient();
   
   group('Server', () {
     
     setUp(() {
-      fileHandler = new StaticFileHandler(directory, port:port);
+      fileHandler = new StaticFileHandler(directory, port:port, ip: ip);
       return fileHandler.start();
     });
     
