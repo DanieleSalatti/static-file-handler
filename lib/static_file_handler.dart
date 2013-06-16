@@ -8,8 +8,11 @@ class StaticFileHandler {
   HttpServer _server;
   Path _root;
   int _port;
+  String _ip;
 
   int get port => _port;
+  String get documentRoot => _root.toString();
+  String get ip => _ip;
 
   final _extToContentType = {
     "bz"      : "application/x-bzip",
@@ -37,7 +40,7 @@ class StaticFileHandler {
   /**
    * This constructor is to be used when running the static file handler as a standalone app.
    */
-  StaticFileHandler(String directory, {int port: 80}) {
+  StaticFileHandler(String documentRoot, {int port: 80, String ip: '0.0.0.0'}) {
     // If port == 0 the OS will pick a random available port for us
     if (65535 < port || 0 > port ) {
       print("Invalid port");
@@ -46,7 +49,10 @@ class StaticFileHandler {
     
     _port = port;
     
-    _root = new Path(directory).canonicalize();
+    _root = new Path(documentRoot).canonicalize();
+    
+    // @todo: check that the IP is valid
+    _ip = ip;
     
     checkDir();
   }
@@ -236,7 +242,7 @@ class StaticFileHandler {
   Future<bool> start() {
     var completer = new Completer();
     // Start the HttpServer.
-    HttpServer.bind("0.0.0.0", this._port)
+    HttpServer.bind(_ip, _port)
         .then((server) {
           _server = server;
           print ("Listening on port ${_server.port}");
