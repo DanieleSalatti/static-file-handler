@@ -68,6 +68,8 @@ class StaticFileHandler {
 
   void errorHandler(error) {
     // Every error goes here. Add potential logger here.
+    print("Error: ${error.toString()}");
+    exit(0);
   }
 
   void checkDir() {
@@ -254,7 +256,7 @@ class StaticFileHandler {
                 cancelOnError: true);
           }, onError: errorHandler);
           completer.complete(true);
-        });
+        }).catchError(errorHandler);
     return completer.future;
   }
   
