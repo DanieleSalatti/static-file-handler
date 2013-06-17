@@ -83,7 +83,7 @@ main() {
       return completer.future;
     });
     
-    test('Not Modified header (304)', () {
+    test('Not Modified (304)', () {
       Completer<bool> completer = new Completer();
       String finalString = "";
       
