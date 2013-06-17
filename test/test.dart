@@ -46,7 +46,7 @@ main() {
       return completer.future;
     });
     
-    test('File not found', () {
+    test('File not found (404)', () {
       Completer<bool> completer = new Completer();
       String finalString = "";
       
@@ -78,6 +78,22 @@ main() {
           expect(finalString, equals("test"));
           completer.complete(true);
         });
+      });
+
+      return completer.future;
+    });
+    
+    test('Not Modified header (304)', () {
+      Completer<bool> completer = new Completer();
+      String finalString = "";
+      
+      client.get("127.0.0.1", port, "/textfile.txt").then((HttpClientRequest request) {
+        request.headers.add("If-Modified-Since", new DateTime.now());
+        return request.close();
+
+      }).then((HttpClientResponse response) {
+        expect(response.statusCode, equals(HttpStatus.NOT_MODIFIED));
+        completer.complete(true);
       });
 
       return completer.future;
