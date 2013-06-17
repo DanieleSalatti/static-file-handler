@@ -14,7 +14,9 @@ To serve files from a directory:
 ```shell
 bin/static_file_handler.dart -d <root-path> -p <port> -c <ip>
 ```
+
 Accepted parameters:
+
 -b    <ip>        Binds the Web server to the specified <ip>
 -c    <file>      Uses the configuration file <file>
                   If the same option is specified both as a command line argument
@@ -22,6 +24,9 @@ Accepted parameters:
 -d    <root-path> Sets the document root to <root-path>
 -h --help         Shows the help
 -p    <port>      Sets the port number to <port>
+
+All parameters are optional. By default it will serve the local directory binding to 0.0.0.0 on port 80.
+
 
 To import the library as a package in your Dart application:
 
