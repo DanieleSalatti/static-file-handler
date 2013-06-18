@@ -99,6 +99,77 @@ main() {
       return completer.future;
     });
     
+    test('Range - content', () {
+      Completer<bool> completer = new Completer();
+      String finalString = "";
+      
+      client.get("127.0.0.1", port, "/textfile.txt").then((HttpClientRequest request) {
+        request.headers.add("range", "bytes=1-2");
+        return request.close();
+
+      }).then((HttpClientResponse response) {
+        response.transform(new StringDecoder())
+        .transform(new LineTransformer())
+        .listen((String result) {
+          finalString += result;
+        },
+        onDone: () {
+          expect(finalString, equals("es"));
+          completer.complete(true);
+        });
+      });
+
+      return completer.future;
+    });
+    
+    test('Range - content length header', () {
+      Completer<bool> completer = new Completer();
+      String finalString = "";
+      
+      client.get("127.0.0.1", port, "/textfile.txt").then((HttpClientRequest request) {
+        request.headers.add("range", "bytes=1-2");
+        return request.close();
+
+      }).then((HttpClientResponse response) {
+        expect(response.headers[HttpHeaders.CONTENT_LENGTH], equals(['2']));
+        completer.complete(true);
+      });
+
+      return completer.future;
+    });
+    
+    test('Range - partial content status', () {
+      Completer<bool> completer = new Completer();
+      String finalString = "";
+      
+      client.get("127.0.0.1", port, "/textfile.txt").then((HttpClientRequest request) {
+        request.headers.add("range", "bytes=1-2");
+        return request.close();
+
+      }).then((HttpClientResponse response) {
+        expect(response.statusCode, equals(HttpStatus.PARTIAL_CONTENT));
+        completer.complete(true);
+      });
+
+      return completer.future;
+    });
+    
+    test('Range - content range header', () {
+      Completer<bool> completer = new Completer();
+      String finalString = "";
+      
+      client.get("127.0.0.1", port, "/textfile.txt").then((HttpClientRequest request) {
+        request.headers.add("range", "bytes=1-2");
+        return request.close();
+
+      }).then((HttpClientResponse response) {
+        expect(response.headers[HttpHeaders.CONTENT_RANGE], equals(['bytes 1-2/4']));
+        completer.complete(true);
+      });
+
+      return completer.future;
+    });
+    
   }); 
   
 }
