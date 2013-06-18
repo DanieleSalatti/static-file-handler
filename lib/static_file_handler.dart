@@ -38,7 +38,7 @@ class StaticFileHandler {
   };
   
   /**
-   * This constructor is to be used when running the static file handler as a standalone app.
+   * Default constructor.
    */
   StaticFileHandler(String documentRoot, {int port: 80, String ip: '0.0.0.0'}) {
     // If port == 0 the OS will pick a random available port for us
@@ -58,8 +58,7 @@ class StaticFileHandler {
   }
   
   /**
-   * This named constructor is to be used when using the static file handler within another
-   * Dart script.
+   * Only sets the directory to be used as document root.
    */
   StaticFileHandler.serveFolder(directory) {
     _root = new Path(directory).canonicalize();
@@ -198,6 +197,9 @@ class StaticFileHandler {
     }, onError: fileError);
   }
   
+  /**
+   * Handles the HttpRequest [request]
+   */
   void handleRequest(HttpRequest request) {
     request.response.done.catchError(errorHandler);
     
