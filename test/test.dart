@@ -4,7 +4,7 @@ import 'package:unittest/unittest.dart';
 import 'dart:async';
 import 'dart:io';
 
-import 'package:dart_static_file_handler/static_file_handler.dart';
+import 'package:static_file_handler/static_file_handler.dart';
 
 
 
