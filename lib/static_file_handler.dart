@@ -232,7 +232,6 @@ class StaticFileHandler {
         default:
           // File not found, fall back to 404.
           request.response.statusCode = HttpStatus.NOT_FOUND;
-          request.response.write("File not found");
           request.response.close();
           break;
       }
