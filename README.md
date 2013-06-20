@@ -54,3 +54,7 @@ When you are done you can stop the Web server using `fileHandler.stop()`.
 ## Adding custom MIME types
 
 At the moment it is possible to add custom MIME types only through a method call (addMIMETypes(`Map<String, String> types)`), i.e. it's not possible to set custom MIME types when using the static file handler from the command line. This option will be available in a future release.
+
+## Issues
+
+Please file issues in the [Issue Tracker][issues]
