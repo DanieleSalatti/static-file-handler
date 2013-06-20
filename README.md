@@ -60,3 +60,7 @@ At the moment it is possible to add custom MIME types only through a method call
 ## Issues
 
 Please file issues in the [Issue Tracker](https://github.com/DanieleSalatti/static-file-handler/issues)
+
+## Acknowledgements
+
+Special thanks to Anders Johnsen for the original code.
