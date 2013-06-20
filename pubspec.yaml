@@ -1,4 +1,4 @@
-name: dart_static_file_handler
+name: static_file_handler
 version: 0.1.0
 author: Daniele Salatti <danielesalatti@gmail.com>
 description: A static file Web server written in Dart
