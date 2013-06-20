@@ -4,6 +4,6 @@ author: Daniele Salatti <danielesalatti@gmail.com>
 description: A static file Web server written in Dart
 homepage: https://github.com/DanieleSalatti/dart-static-file-handler
 environment:
-  sdk: '>=0.5.13'
+  sdk: '>=0.5.20'
 dev_dependencies:
-  unittest: any
+  unittest: 0.5.20
