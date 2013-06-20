@@ -6,4 +6,5 @@ homepage: https://github.com/DanieleSalatti/dart-static-file-handler
 environment:
   sdk: '>=0.5.20'
 dev_dependencies:
+  route: 0.4.5
   unittest: 0.5.20
