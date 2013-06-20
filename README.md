@@ -42,7 +42,7 @@ You can see an example that uses the `route` package to feed the static file han
 
 ### Spawn a Web server and serve static content from your app
 
-If you want to serve static files from your application, and you don't already have an instance of HttpServer, you can do as follows:
+If you just want to serve static files from your application, you can do as follows:
 
 ```dart
 var fileHandler = new StaticFileHandler(path, port: port);
