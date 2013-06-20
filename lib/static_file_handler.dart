@@ -60,7 +60,7 @@ class StaticFileHandler {
   /**
    * Only sets the directory to be used as document root.
    */
-  StaticFileHandler.serveFolder(directory) {
+  StaticFileHandler.serveFolder(String directory) {
     _root = new Path(directory).canonicalize();
     _checkDir();
   }

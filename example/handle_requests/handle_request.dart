@@ -15,7 +15,7 @@ class NemServer {
 
     HttpServer.bind(ip, port)
       .then((HttpServer server) {
-        
+        print("Listening on port: ${server.port}");
         var router = new Router(server)
             // Static files and other stuff that do not require authentication
             ..filter(matchAny(noAuthUrls), noAuth)
