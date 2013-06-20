@@ -31,7 +31,7 @@ StaticFileHandler fileHandler = new StaticFileHandler.serveFolder(basePath);
 fileHandler.handleRequest(httpRequest);
 ```
 
-### Spawn a Web server and serve static content from your app requests
+### Spawn a Web server and serve static content from your app
 
 ```dart
 var fileHandler = new StaticFileHandler(path, port: port);
