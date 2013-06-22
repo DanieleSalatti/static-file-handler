@@ -29,19 +29,19 @@ void main() {
     if (config != null) { // At the moment the config file overrides other command line arguments 
       var file = new File(config);
       String configFileContent = file.readAsStringSync(encoding: Encoding.ASCII);
-      YamlMap config = loadYaml(configFileContent);
+      YamlMap configFile = loadYaml(configFileContent);
       
-      if (config['host'] != null) {
-        host = config['host'];
+      if (configFile['host'] != null) {
+        host = configFile['host'];
       }
-      if (config['port'] != null) {
-        port = config['port'];
+      if (configFile['port'] != null) {
+        port = configFile['port'];
       }
-      if (config['document-root'] != null) {
-        rootPath = config['document-root'];
+      if (configFile['document-root'] != null) {
+        rootPath = configFile['document-root'];
       }
-      if (config['mime-types'] != null) {
-        mimeTypes = config['mime-types'];
+      if (configFile['mime-types'] != null) {
+        mimeTypes = configFile['mime-types'];
       }
     }
     
