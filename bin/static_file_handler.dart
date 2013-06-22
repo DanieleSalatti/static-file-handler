@@ -2,98 +2,74 @@ library static_file_handler;
 
 import 'dart:io';
 import 'dart:async';
+import 'package:args/args.dart';
 import 'package:yaml/yaml.dart';
 import 'package:static_file_handler/static_file_handler.dart';
 
-void printUsage(String script) {
-  print("Usage: ${script} -d <root-path> -p <port>");
-  print("");
-  print("Accepted parameters:");
-  print("\t-b <ip>\t\t\tBinds the Web server to the specified <ip>");
-  print("\t-c <file>\t\tUses the configuration file <file>");
-  print("\t\t\t\tIf the same option is specified both as a command line argument");
-  print("\t\t\t\tand into the config file, the config file will prevail");
-  print("\t-d <root-path>\t\tSets the document root to <root-path>");
-  print("\t-h --help\t\tShows this help");
-  print("\t-p <port>\t\tSets the port number to <port>");
+void main() {
+  ArgResults args = _getArgs();
+  
+  if (args != null) {
+    
+    Map mimeTypes;
+    
+    String rootPath = args['root'];
+    String host = args['host'];
+
+    int port;
+    try {
+      port = int.parse(args['port']);
+    } catch (e) {
+      print("Invalid port number");
+      exit(-1);
+    }
+    
+    String config = args['config'];
+    
+    if (config != null) { // At the moment the config file overrides other command line arguments 
+      var file = new File(config);
+      String configFileContent = file.readAsStringSync(encoding: Encoding.ASCII);
+      YamlMap config = loadYaml(configFileContent);
+      
+      if (config['host'] != null) {
+        host = config['host'];
+      }
+      if (config['port'] != null) {
+        port = config['port'];
+      }
+      if (config['document-root'] != null) {
+        rootPath = config['document-root'];
+      }
+      if (config['mime-types'] != null) {
+        mimeTypes = config['mime-types'];
+      }
+    }
+    
+    var fileHandler = new StaticFileHandler(rootPath, port: port, ip: host);
+    
+    if (mimeTypes != null) {
+      fileHandler.addMIMETypes(mimeTypes);
+    }
+    
+    fileHandler.start();
+  }
 }
 
-void main() {
-  Options options = new Options();
-  
-  var args = options.arguments;
-  
-  String path = './';
-  int port = 80;
-  String configFile;
-  String ip = '0.0.0.0';
-  Map mimeTypes;
-  
-  for (int i = 0; i < args.length; i+=2) {
-    
-    switch(args[i]) {
-      
-      case "-b":  // IP
-        ip = args[i+1];
-        break;
-        
-      case "-c":  // use config file
-        configFile = args[i+1];
-        break;
-        
-      case "-d":  // document root
-        path = args[i+1];
-        break;
-        
-      case "-h":  // help
-      case "--help":
-        printUsage(options.script);
-        exit(0);
-        break;
-        
-      case "-p":  // port
-        try {
-          port = int.parse(args[i+1]);
-        } catch (e) {
-          print("Invalid port");
-          printUsage(options.script);
-          exit(-1);
-        }
-        break;
-        
-      default:
-        print("Invalid argument");
-        printUsage(options.script);
-        exit(-1);
-        break;
-    }  
-    
-  }
 
-  if (configFile != null) { // At the moment the config file overrides other command line arguments 
-    var file = new File(configFile);
-    String configFileContent = file.readAsStringSync(encoding: Encoding.ASCII);
-    YamlMap config = loadYaml(configFileContent);
-    
-    if (config['ip'] != null) {
-      ip = config['ip'];
-    }
-    if (config['port'] != null) {
-      port = config['port'];
-    }
-    if (config['document-root'] != null) {
-      path = config['document-root'];
-    }
-    if (config['mime-types'] != null) {
-      mimeTypes = config['mime-types'];
-    }
+ArgResults _getArgs() {
+
+  final argParser = new ArgParser();
+  argParser.addOption("config", abbr:"c", help:"Specify a configuration file (see config.yaml)", defaultsTo: null);
+  argParser.addOption("host", abbr:"h", help:"Binds the Web server to the specified IP", defaultsTo: "0.0.0.0");
+  argParser.addOption("root", abbr:"r", help:"Sets the document root", defaultsTo: "/");  
+  argParser.addOption("port", abbr:"p", help:"Sets the port number", defaultsTo: "80");
+
+  final options = new Options();
+  if (options.arguments.length == 0) {
+    print(argParser.getUsage());
+    return null;
   }
-  
-  var fileHandler = new StaticFileHandler(path, port: port, ip: ip);
-  
-  if (mimeTypes != null) {
-    fileHandler.addMIMETypes(mimeTypes);
+  else {
+    return argParser.parse(options.arguments);
   }
-  
-  fileHandler.start();
 }
