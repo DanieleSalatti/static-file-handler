@@ -140,9 +140,9 @@ class StaticFileHandler {
         response.headers.set(HttpHeaders.LAST_MODIFIED, lastModified);
         
         String ext = new Path(file.path).extension;
-        if (_extToContentType.containsKey(ext)) {
+        if (_extToContentType.containsKey(ext.toLowerCase())) {
           response.headers.contentType =
-              ContentType.parse(_extToContentType[ext]);
+              ContentType.parse(_extToContentType[ext.toLowerCase()]);
         }
   
         if (request.method == 'HEAD') {
