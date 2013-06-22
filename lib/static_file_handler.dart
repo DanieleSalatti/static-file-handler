@@ -38,7 +38,7 @@ class StaticFileHandler {
   };
   
   /**
-   * This constructor is to be used when running the static file handler as a standalone app.
+   * Default constructor.
    */
   StaticFileHandler(String documentRoot, {int port: 80, String ip: '0.0.0.0'}) {
     // If port == 0 the OS will pick a random available port for us
@@ -54,25 +54,23 @@ class StaticFileHandler {
     // @todo: check that the IP is valid
     _ip = ip;
     
-    checkDir();
+    _checkDir();
   }
   
   /**
-   * This named constructor is to be used when using the static file handler within another
-   * Dart script.
+   * Only sets the directory to be used as document root.
    */
-  StaticFileHandler.serveFolder(directory) {
+  StaticFileHandler.serveFolder(String directory) {
     _root = new Path(directory).canonicalize();
-    checkDir();
+    _checkDir();
   }
 
-  void errorHandler(error) {
+  void _errorHandler(error) {
     // Every error goes here. Add potential logger here.
     print("Error: ${error.toString()}");
-    exit(0);
   }
 
-  void checkDir() {
+  void _checkDir() {
     if (!new Directory.fromPath(_root).existsSync()) {
       print("Root path does not exist or is not a directory");
       exit(-1);
@@ -83,7 +81,7 @@ class StaticFileHandler {
    * Serve the directory [dir] to the [request]. The content of the directory
    * will be listed in bullet-form, with a link to each element.
    */
-  void serveDir(Directory dir, HttpRequest request) {
+  void _serveDir(Directory dir, HttpRequest request) {
     HttpResponse response = request.response;
   
     response.write("<html><head>");
@@ -101,7 +99,7 @@ class StaticFileHandler {
           response.write("</ul></body></html>");
           response.close();
         },
-        onError: errorHandler);
+        onError: _errorHandler);
   }
   
   /**
@@ -116,14 +114,14 @@ class StaticFileHandler {
    * streamed to the response. If a supported [:Range:] header is received, only
    * a smaller part of the [file] will be streamed.
    */
-  void serveFile(File file, HttpRequest request) {
+  void _serveFile(File file, HttpRequest request) {
     HttpResponse response = request.response;
   
     // Callback used if file operations fails.
     void fileError(e) {
       response.statusCode = HttpStatus.NOT_FOUND;
       response.close();
-      errorHandler(e);
+      _errorHandler(e);
     }
   
     file.lastModified().then((lastModified) {
@@ -180,7 +178,7 @@ class StaticFileHandler {
   
             // Pipe the 'range' of the file.
             file.openRead(start, end).pipe(response)
-                .catchError(errorHandler);
+                .catchError(_errorHandler);
             return;
           }
         }
@@ -194,13 +192,16 @@ class StaticFileHandler {
         }
 
         // Fall back to sending the entire content.
-        file.openRead().pipe(response).catchError(errorHandler);
+        file.openRead().pipe(response).catchError(_errorHandler);
       }, onError: fileError);
     }, onError: fileError);
   }
   
+  /**
+   * Handles the HttpRequest [request]
+   */
   void handleRequest(HttpRequest request) {
-    request.response.done.catchError(errorHandler);
+    request.response.done.catchError(_errorHandler);
     
     if (new Path(request.uri.path).segments().contains('..')) {
       // Invalid path.
@@ -216,22 +217,21 @@ class StaticFileHandler {
       switch (type) {
         case FileSystemEntityType.FILE:
           // If file, serve as such.
-          serveFile(new File.fromPath(path), request);
+          _serveFile(new File.fromPath(path), request);
           break;
           
         case FileSystemEntityType.DIRECTORY:
           // If directory, serve as such.
           if (new File.fromPath(path.append("index.html")).existsSync()) {
-            serveFile(new File.fromPath(path.append("index.html")), request);
+            _serveFile(new File.fromPath(path.append("index.html")), request);
           } else {
-            serveDir(new Directory.fromPath(path), request);
+            _serveDir(new Directory.fromPath(path), request);
           }
           break;
           
         default:
           // File not found, fall back to 404.
           request.response.statusCode = HttpStatus.NOT_FOUND;
-          request.response.write("File not found");
           request.response.close();
           break;
       }
@@ -252,11 +252,11 @@ class StaticFileHandler {
             request.listen(
                 (_) { /* ignore post body */ },
                 onDone: handleRequest(request),
-                onError: errorHandler,
+                onError: _errorHandler,
                 cancelOnError: true);
-          }, onError: errorHandler);
+          }, onError: _errorHandler);
           completer.complete(true);
-        }).catchError(errorHandler);
+        }).catchError(_errorHandler);
     return completer.future;
   }
   

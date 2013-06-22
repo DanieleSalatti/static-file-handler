@@ -3,7 +3,7 @@ library static_file_handler;
 import 'dart:io';
 import 'dart:async';
 import 'package:yaml/yaml.dart';
-import 'package:dart_static_file_handler/static_file_handler.dart';
+import 'package:static_file_handler/static_file_handler.dart';
 
 void printUsage(String script) {
   print("Usage: ${script} -d <root-path> -p <port>");

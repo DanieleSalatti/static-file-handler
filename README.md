@@ -1,37 +1,66 @@
-dart-static-file-handler
-========================
+# static-file-handler
 
 A static file Web server written in Dart.
 It can be used as a stand-alone command line tool or imported as a package in a Dart application.
 
 [![Build Status](https://drone.io/github.com/DanieleSalatti/dart-static-file-handler/status.png)](https://drone.io/github.com/DanieleSalatti/dart-static-file-handler/latest)
 
-Usage
------
+## Usage
 
-To serve files from a directory:
+The static-file-handler can be used:
+
+* From the command line to serve files from a directory
+* To serve static files while your server side app takes care of all the dynamic requests
+* To spawn a Web server and serve static content from your app
+
+### Serve a directory from the command line
+
+You can serve files from a directory by running the Dart script located into `bin`:
 
 ```shell
-bin/static_file_handler.dart -d <root-path> -p <port> -c <ip>
+cd static_file_handler/bin
+dart static_file_handler.dart <root-path> <port>
 ```
 
-Accepted parameters:
+### Serve static files from your server app
 
--b    <ip>        Binds the Web server to the specified <ip>
--c    <file>      Uses the configuration file <file>
-                  If the same option is specified both as a command line argument
-                  and into the config file, the config file will prevail
--d    <root-path> Sets the document root to <root-path>
--h --help         Shows the help
--p    <port>      Sets the port number to <port>
+Add the package to your pubspec.yaml file:
 
-All parameters are optional. By default it will serve the local directory binding to 0.0.0.0 on port 80.
+```yaml
+dependencies:
+  static_file_handler: any
+```
 
-
-To import the library as a package in your Dart application:
+Create an instance of the static file handler using the named constructor `serveFolder(String directory)`, then call `handleRequest(HttpRequest request)` to serve your files. In this way your server application can handle all the dynamic requests, and you won't have to take care of the static files.
 
 ```dart
-StaticFileHandler fileHandler = new StaticFileHandler.serveFolder(basePath);
+StaticFileHandler fileHandler = new StaticFileHandler.serveFolder("/path/to/folder");
 
 fileHandler.handleRequest(httpRequest);
 ```
+You can see an example that uses the `route` package to feed the static file handler only with non-dynamic requests in the `example/handle_request` folder.
+
+### Spawn a Web server and serve static content from your app
+
+If you just want to serve static files from your application, you can do as follows:
+
+```dart
+var fileHandler = new StaticFileHandler(path, port: port);
+  
+fileHandler.start();
+```
+When you are done you can stop the Web server using `fileHandler.stop()`.
+
+You can see an example in the `example/serve_folder` folder.
+
+## Adding custom MIME types
+
+At the moment it is possible to add custom MIME types only through a method call (`addMIMETypes(Map<String, String> types)`), i.e. it's not possible to set custom MIME types when using the static file handler from the command line. This option will be available in a future release.
+
+## Issues
+
+Please file issues in the [Issue Tracker](https://github.com/DanieleSalatti/static-file-handler/issues)
+
+## Acknowledgements
+
+Special thanks to Anders Johnsen for the original code.
