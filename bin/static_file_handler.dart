@@ -20,6 +20,7 @@ void main() {
     
     Map mimeTypes;
     
+    String config = args['config'];
     String rootPath = args['root'];
     String host = args['host'];
 
@@ -30,8 +31,6 @@ void main() {
       print("Invalid port number");
       exit(-1);
     }
-    
-    String config = args['config'];
     
     if (config != null) { // At the moment the config file overrides other command line arguments 
       var file = new File(config);
