@@ -2,16 +2,17 @@ library static_file_handler;
 
 import 'dart:async';
 import 'dart:io';
+import 'package:path/path.dart';
 
 class StaticFileHandler {
-  
+
   HttpServer _server;
-  Path _root;
+  Builder _root;
   int _port;
   String _ip;
 
   int get port => _port;
-  String get documentRoot => _root.toString();
+  String get documentRoot => _root.root;
   String get ip => _ip;
 
   final _extToContentType = {
@@ -23,7 +24,7 @@ class StaticFileHandler {
     "gz"      : "application/x-gzip",
     "html"    : "text/html; charset=utf-8",  // Assumes UTF-8 files.
     "jpg"     : "image/jpeg",
-    "js"      : "application/javascript", 
+    "js"      : "application/javascript",
     "json"    : "application/json",
     "mp3"     : "audio/mpeg",
     "mp4"     : "video/mp4",
@@ -36,7 +37,7 @@ class StaticFileHandler {
     "webm"    : "video/webm",
     "zip"     : "application/zip"
   };
-  
+
   /**
    * Default constructor.
    */
@@ -46,22 +47,22 @@ class StaticFileHandler {
       print("Invalid port");
       exit(-1);
     }
-    
+
     _port = port;
-    
-    _root = new Path(documentRoot).canonicalize();
-    
+
+    _root = new Builder(root: absolute(normalize(documentRoot)));
+
     // @todo: check that the IP is valid
     _ip = ip;
-    
+
     _checkDir();
   }
-  
+
   /**
    * Only sets the directory to be used as document root.
    */
   StaticFileHandler.serveFolder(String directory) {
-    _root = new Path(directory).canonicalize();
+    _root = new Builder(root:  absolute(normalize(directory)));
     _checkDir();
   }
 
@@ -71,28 +72,31 @@ class StaticFileHandler {
   }
 
   void _checkDir() {
-    if (!new Directory.fromPath(_root).existsSync()) {
+    var dir = new Directory(_root.root);
+    if (!dir.existsSync()) {
       print("Root path does not exist or is not a directory");
       exit(-1);
     }
   }
-  
+
   /**
    * Serve the directory [dir] to the [request]. The content of the directory
    * will be listed in bullet-form, with a link to each element.
    */
   void _serveDir(Directory dir, HttpRequest request) {
     HttpResponse response = request.response;
-  
+
     response.write("<html><head>");
     response.write("<title>${request.uri}</title>");
     response.write("</head><body>");
     response.write("<h1>Contents of ${request.uri}</h1><ul>");
-  
+
     dir.list().listen(
         (entity) {
-          String name = new Path(entity.path).filename;
-          Path href = new Path(request.uri.path).append(name);
+          String name = basename(entity.path);
+          Builder hrefBuilder = new Builder(root: request.uri.path);
+          String href = hrefBuilder.join(name);
+          //Path href = new Path(request.uri.path).append(name);
           response.write("<li><a href='$href'>$name</a></li>");
         },
         onDone: () {
@@ -101,14 +105,14 @@ class StaticFileHandler {
         },
         onError: _errorHandler);
   }
-  
+
   /**
    * Add the MIME types [types] to the list of supported MIME types
    */
   void addMIMETypes(Map<String, String> types){
     _extToContentType.addAll(types);
   }
-  
+
   /**
    * Serve the file [file] to the [request]. The content of the file will be
    * streamed to the response. If a supported [:Range:] header is received, only
@@ -116,14 +120,14 @@ class StaticFileHandler {
    */
   void _serveFile(File file, HttpRequest request) {
     HttpResponse response = request.response;
-  
+
     // Callback used if file operations fails.
     void fileError(e) {
       response.statusCode = HttpStatus.NOT_FOUND;
       response.close();
       _errorHandler(e);
     }
-  
+
     file.lastModified().then((lastModified) {
       // If If-Modified-Since is present and file haven't changed, return 304.
       if (request.headers.ifModifiedSince != null &&
@@ -132,24 +136,24 @@ class StaticFileHandler {
         response.close();
         return;
       }
-  
-  
+
+
       file.length().then((length) {
         // Always set Accept-Ranges and Last-Modified headers.
         response.headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
         response.headers.set(HttpHeaders.LAST_MODIFIED, lastModified);
-        
-        String ext = new Path(file.path).extension;
+
+        String ext = extension(file.path);
         if (_extToContentType.containsKey(ext)) {
           response.headers.contentType =
               ContentType.parse(_extToContentType[ext]);
         }
-  
+
         if (request.method == 'HEAD') {
           response.close();
           return;
         }
-  
+
         // If the Range header was received, handle it.
         String range = request.headers.value("range");
         if (range != null) {
@@ -167,22 +171,22 @@ class StaticFileHandler {
               start = int.parse(matches[1]);
               end = matches[2].isEmpty ? length : int.parse(matches[2]) + 1;
             }
-  
+
             // Override Content-Length with the actual bytes sent.
             response.headers.set(HttpHeaders.CONTENT_LENGTH, end - start);
-  
+
             // Set 'Partial Content' status code.
             response.statusCode = HttpStatus.PARTIAL_CONTENT;
             response.headers.set(HttpHeaders.CONTENT_RANGE,
                                  "bytes $start-${end - 1}/$length");
-  
+
             // Pipe the 'range' of the file.
             file.openRead(start, end).pipe(response)
                 .catchError(_errorHandler);
             return;
           }
         }
-  
+
         /*
          * Send content length if using HTTP/1.0
          * When using HTTP/1.1 chunked transfer encoding is used
@@ -196,39 +200,64 @@ class StaticFileHandler {
       }, onError: fileError);
     }, onError: fileError);
   }
-  
+
+  _resolvePath(String uriPath) {
+    Builder builder = new Builder(root: absolute(_root.root));
+    var decodedUri = Uri.decodeComponent(uriPath);
+    var root = rootPrefix(decodedUri);
+    var parts = split(decodedUri);
+
+    if (parts.first == root) {
+      parts.removeAt(0);
+    }
+
+    parts.removeWhere((e) => e.isEmpty);
+    String path;
+    if (!parts.isEmpty) {
+      var paths = [];
+      paths.add(builder.root);
+      paths.addAll(parts);
+      path = joinAll(paths);
+    } else {
+      path = builder.root;
+    }
+
+    return path;
+  }
+
   /**
    * Handles the HttpRequest [request]
    */
   void handleRequest(HttpRequest request) {
     request.response.done.catchError(_errorHandler);
-    
-    if (new Path(request.uri.path).segments().contains('..')) {
+
+    if (split(request.uri.path).contains('..')) {
       // Invalid path.
       request.response.statusCode = HttpStatus.FORBIDDEN;
       request.response.close();
       return;
     }
-    
-    Path path = _root.append(Uri.decodeComponent(request.uri.path)).canonicalize();
-    
-    FileSystemEntity.type(path.toString())
+
+    String path = _resolvePath(request.uri.path);
+
+    FileSystemEntity.type(path)
     .then((type) {
       switch (type) {
         case FileSystemEntityType.FILE:
           // If file, serve as such.
-          _serveFile(new File.fromPath(path), request);
+          _serveFile(new File(path), request);
           break;
-          
+
         case FileSystemEntityType.DIRECTORY:
           // If directory, serve as such.
-          if (new File.fromPath(path.append("index.html")).existsSync()) {
-            _serveFile(new File.fromPath(path.append("index.html")), request);
+          path = join(path, "index.html");
+          if (new File(path).existsSync()) {
+            _serveFile(new File(path), request);
           } else {
-            _serveDir(new Directory.fromPath(path), request);
+            _serveDir(new Directory(path), request);
           }
           break;
-          
+
         default:
           // File not found, fall back to 404.
           request.response.statusCode = HttpStatus.NOT_FOUND;
@@ -237,7 +266,7 @@ class StaticFileHandler {
       }
     });
   }
-  
+
   /**
    * Start the HttpServer
    */
@@ -259,7 +288,7 @@ class StaticFileHandler {
         }).catchError(_errorHandler);
     return completer.future;
   }
-  
+
   /**
    * Stop the HttpServer
    */
