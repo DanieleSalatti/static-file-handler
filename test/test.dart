@@ -3,7 +3,7 @@ library staticFileHandlerTest;
 import 'package:unittest/unittest.dart';
 import 'dart:async';
 import 'dart:io';
-import 'dart:utf';
+import 'dart:convert';
 import 'package:static_file_handler/static_file_handler.dart';
 
 void main() {
@@ -67,8 +67,8 @@ void main() {
         return request.close();
 
       }).then((HttpClientResponse response) {
-        response.transform(new Utf8DecoderTransformer())
-        //.transform(new LineTransformer())
+        response.transform(new Utf8Decoder())
+        .transform(new LineSplitter())
         .listen((String result) {
           finalString += result;
         },
@@ -106,8 +106,8 @@ void main() {
         return request.close();
 
       }).then((HttpClientResponse response) {
-        response.transform(new Utf8DecoderTransformer())
-        //.transform(new LineTransformer())
+        response.transform(new Utf8Decoder())
+        .transform(new LineSplitter())
         .listen((String result) {
           finalString += result;
         },
