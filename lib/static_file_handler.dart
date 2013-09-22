@@ -207,7 +207,7 @@ class StaticFileHandler {
     var root = rootPrefix(decodedUri);
     var parts = split(decodedUri);
 
-    if (parts.first == root) {
+    if (parts.isNotEmpty && parts.first == root) {
       parts.removeAt(0);
     }
 
