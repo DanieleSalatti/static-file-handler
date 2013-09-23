@@ -10,10 +10,13 @@ class StaticFileHandler {
   Builder _root;
   int _port;
   String _ip;
+  int _maxAge;
 
   int get port => _port;
   String get documentRoot => _root.root;
   String get ip => _ip;
+  int get maxAge => _maxAge;
+      set maxAge(num value) => _maxAge = (value >= 0) ? value : 0;
 
   final _extToContentType = {
     "bz"      : "application/x-bzip",
@@ -195,6 +198,10 @@ class StaticFileHandler {
           response.headers.set(HttpHeaders.CONTENT_LENGTH, length);
         }
 
+        if (_maxAge != null) {
+          response.headers.set(HttpHeaders.CACHE_CONTROL, "max-age=$_maxAge");
+        }
+        
         // Fall back to sending the entire content.
         file.openRead().pipe(response).catchError(_errorHandler);
       }, onError: fileError);
