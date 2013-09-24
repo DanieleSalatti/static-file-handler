@@ -1,7 +1,7 @@
 library static_file_handler;
 
 import 'dart:io';
-import 'dart:async';
+import 'dart:convert';
 import 'package:args/args.dart';
 import 'package:yaml/yaml.dart';
 import 'package:static_file_handler/static_file_handler.dart';
@@ -34,7 +34,7 @@ void main() {
     
     if (config != null) { // At the moment the config file overrides other command line arguments 
       var file = new File(config);
-      String configFileContent = file.readAsStringSync(encoding: Encoding.ASCII);
+      String configFileContent = file.readAsStringSync(encoding: Encoding.getByName("ASCII"));
       YamlMap configFile = loadYaml(configFileContent);
       
       if (configFile['host'] != null) {
