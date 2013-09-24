@@ -96,6 +96,21 @@ void main() {
 
       return completer.future;
     });
+    
+    test('Max Age', () {
+      Completer<bool> completer = new Completer();
+      String finalString = "";
+      fileHandler.maxAge = 3600;
+      
+      client.get("127.0.0.1", port, "/textfile.txt").then((HttpClientRequest request) {
+        return request.close();
+      }).then((HttpClientResponse response) {
+        expect(response.headers[HttpHeaders.CACHE_CONTROL][0], equals("max-age=3600"));
+        completer.complete(true);
+      });
+
+      return completer.future;
+    });
 
     test('Range - content', () {
       Completer<bool> completer = new Completer();
