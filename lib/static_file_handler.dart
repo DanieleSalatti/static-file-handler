@@ -257,9 +257,9 @@ class StaticFileHandler {
 
         case FileSystemEntityType.DIRECTORY:
           // If directory, serve as such.
-          path = join(path, "index.html");
-          if (new File(path).existsSync()) {
-            _serveFile(new File(path), request);
+          var index = join(path, "index.html");
+          if (new File(index).existsSync()) {
+            _serveFile(new File(index), request);
           } else {
             _serveDir(new Directory(path), request);
           }
