@@ -17,8 +17,12 @@ void main() {
   group('Server', () {
 
     setUp(() {
+      Completer<bool> completer = new Completer();
       fileHandler = new StaticFileHandler(directory, port:port, ip: ip);
-      return fileHandler.start();
+      fileHandler.start().then((success) {
+        completer.complete(success);
+      });
+      return completer.future;
     });
 
     tearDown(() {
