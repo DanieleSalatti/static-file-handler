@@ -115,7 +115,7 @@ class StaticFileHandler {
   void addMIMETypes(Map<String, String> types){
     _extToContentType.addAll(types);
   }
-
+  
   /**
    * Serve the file [file] to the [request]. The content of the file will be
    * streamed to the response. If a supported [:Range:] header is received, only
@@ -131,6 +131,38 @@ class StaticFileHandler {
       _errorHandler(e);
     }
 
+    void pipeToResponse(Stream fileContent, HttpResponse response) {
+      fileContent.pipe(response).then((_) => response.close()).catchError(_errorHandler);
+    }
+    
+    void _sendRange(File file, HttpResponse response, String range, length) {
+      // We only support one range, where the standard support several.
+      Match matches = new RegExp(r"^bytes=(\d*)\-(\d*)$").firstMatch(range);
+      // If the range header have the right format, handle it.
+      if (matches != null) {
+        // Serve sub-range.
+        int start;
+        int end;
+        if (matches[1].isEmpty) {
+          start = matches[2].isEmpty ? length : length - int.parse(matches[2]);
+          end = length;
+        } else {
+          start = int.parse(matches[1]);
+          end = matches[2].isEmpty ? length : int.parse(matches[2]) + 1;
+        }
+
+        // Override Content-Length with the actual bytes sent.
+        response.headers.set(HttpHeaders.CONTENT_LENGTH, end - start);
+
+        // Set 'Partial Content' status code.
+        response.statusCode = HttpStatus.PARTIAL_CONTENT;
+        response.headers.set(HttpHeaders.CONTENT_RANGE, "bytes $start-${end - 1}/$length");
+
+        // Pipe the 'range' of the file.
+        pipeToResponse(file.openRead(start, end), response);
+      }
+    }
+    
     file.lastModified().then((lastModified) {
       // If If-Modified-Since is present and file haven't changed, return 304.
       if (request.headers.ifModifiedSince != null &&
@@ -148,8 +180,7 @@ class StaticFileHandler {
 
         String ext = extension(file.path);
         if (_extToContentType.containsKey(ext.toLowerCase())) {
-          response.headers.contentType =
-              ContentType.parse(_extToContentType[ext.toLowerCase()]);
+          response.headers.contentType = ContentType.parse(_extToContentType[ext.toLowerCase()]);
         }
 
         if (request.method == 'HEAD') {
@@ -160,34 +191,8 @@ class StaticFileHandler {
         // If the Range header was received, handle it.
         String range = request.headers.value("range");
         if (range != null) {
-          // We only support one range, where the standard support several.
-          Match matches = new RegExp(r"^bytes=(\d*)\-(\d*)$").firstMatch(range);
-          // If the range header have the right format, handle it.
-          if (matches != null) {
-            // Serve sub-range.
-            int start;
-            int end;
-            if (matches[1].isEmpty) {
-              start = matches[2].isEmpty ? length : length - int.parse(matches[2]);
-              end = length;
-            } else {
-              start = int.parse(matches[1]);
-              end = matches[2].isEmpty ? length : int.parse(matches[2]) + 1;
-            }
-
-            // Override Content-Length with the actual bytes sent.
-            response.headers.set(HttpHeaders.CONTENT_LENGTH, end - start);
-
-            // Set 'Partial Content' status code.
-            response.statusCode = HttpStatus.PARTIAL_CONTENT;
-            response.headers.set(HttpHeaders.CONTENT_RANGE,
-                                 "bytes $start-${end - 1}/$length");
-
-            // Pipe the 'range' of the file.
-            file.openRead(start, end).pipe(response)
-                .catchError(_errorHandler);
-            return;
-          }
+          _sendRange(file, response, range, length);
+          return;
         }
 
         /*
@@ -203,7 +208,7 @@ class StaticFileHandler {
         }
         
         // Fall back to sending the entire content.
-        file.openRead().pipe(response).catchError(_errorHandler);
+        pipeToResponse(file.openRead(), response);
       }, onError: fileError);
     }, onError: fileError);
   }
