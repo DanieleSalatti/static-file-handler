@@ -19,7 +19,19 @@ You can serve files from a directory by running the Dart script located into `bi
 
 ```shell
 cd static_file_handler/bin
-dart static_file_handler.dart <root-path> <port>
+dart static_file_handler.dart -r <root-path> -p <port>
+```
+Optionally, you can specify a configuration file in the command line parameters.
+
+```shell
+dart static_file_handler.dart -c <config-file>
+```
+A sample `config.yaml` file is available in the `bin` folder.
+
+For a description of all the possible parameters:
+
+```shell
+dart static_file_handler.dart --help
 ```
 
 ### Serve static files from your server app
@@ -55,7 +67,7 @@ You can see an example in the `example/serve_folder` folder.
 
 ## Adding custom MIME types
 
-At the moment it is possible to add custom MIME types only through a method call (`addMIMETypes(Map<String, String> types)`), i.e. it's not possible to set custom MIME types when using the static file handler from the command line. This option will be available in a future release.
+It is possible to add custom MIME types through a method call (`addMIMETypes(Map<String, String> types)`), or by editing the config file.
 
 ## Issues
 
@@ -64,3 +76,4 @@ Please file issues in the [Issue Tracker](https://github.com/DanieleSalatti/stat
 ## Acknowledgements
 
 Special thanks to Anders Johnsen for the original code.
+Thanks to [Adam Singer](https://github.com/financeCoding) for his contribution.
