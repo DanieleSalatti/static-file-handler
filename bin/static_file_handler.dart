@@ -8,8 +8,8 @@ import 'package:static_file_handler/static_file_handler.dart';
 
 final argParser = new ArgParser();
 
-void main() {
-  ArgResults args = _getArgs();
+void main(List<String> arguments) {
+  ArgResults args = _getArgs(arguments);
   
   if (args != null) {
     
@@ -62,15 +62,13 @@ void main() {
 }
 
 
-ArgResults _getArgs() {
+ArgResults _getArgs(List<String> arguments) {
 
   argParser.addOption("config", abbr:"c", help:"Specify a configuration file (see config.yaml)", defaultsTo: null);
   argParser.addOption("host", abbr:"h", help:"Binds the Web server to the specified IP", defaultsTo: "0.0.0.0");
   argParser.addFlag("help", help:"Shows this help", negatable:false);
   argParser.addOption("root", abbr:"r", help:"Sets the document root", defaultsTo: "/");  
   argParser.addOption("port", abbr:"p", help:"Sets the port number", defaultsTo: "3000");
-
-  final options = new Options();
   
-  return argParser.parse(options.arguments);
+  return argParser.parse(arguments);
 }
