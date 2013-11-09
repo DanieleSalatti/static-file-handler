@@ -19,20 +19,13 @@ void main(List<String> arguments) {
     }
     
     Map mimeTypes;
+    String rootPath;
+    String host;
+    int port;
     
     String config = args['config'];
-    String rootPath = args['root'];
-    String host = args['host'];
-
-    int port;
-    try {
-      port = int.parse(args['port']);
-    } catch (e) {
-      print("Invalid port number");
-      exit(-1);
-    }
     
-    if (config != null) { // At the moment the config file overrides other command line arguments 
+    if (config != null) { 
       var file = new File(config);
       String configFileContent = file.readAsStringSync(encoding: Encoding.getByName("ASCII"));
       YamlMap configFile = loadYaml(configFileContent);
@@ -48,6 +41,16 @@ void main(List<String> arguments) {
       }
       if (configFile['mime-types'] != null) {
         mimeTypes = configFile['mime-types'];
+      }
+    } else {
+      rootPath = args['root'];
+      host = args['host'];
+
+      try {
+        port = int.parse(args['port']);
+      } catch (e) {
+        print("Invalid port number");
+        exit(-1);
       }
     }
     
