@@ -2,18 +2,18 @@ library static_file_handler;
 
 import 'dart:async';
 import 'dart:io';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
 
 class StaticFileHandler {
 
   HttpServer _server;
-  Builder _root;
+  String _root;
   int _port;
   String _ip;
   int _maxAge;
 
   int get port => _port;
-  String get documentRoot => _root.root;
+  String get documentRoot => _root;
   String get ip => _ip;
   int get maxAge => _maxAge;
       set maxAge(num value) => _maxAge = (value >= 0) ? value : 0;
@@ -52,8 +52,8 @@ class StaticFileHandler {
     }
 
     _port = port;
-
-    _root = new Builder(root: absolute(normalize(documentRoot)));
+    
+    _root = path.absolute(path.normalize(documentRoot));
 
     // @todo: check that the IP is valid
     _ip = ip;
@@ -65,7 +65,7 @@ class StaticFileHandler {
    * Only sets the directory to be used as document root.
    */
   StaticFileHandler.serveFolder(String directory) {
-    _root = new Builder(root:  absolute(normalize(directory)));
+    _root = path.absolute(path.normalize(directory));
     _checkDir();
   }
 
@@ -75,9 +75,9 @@ class StaticFileHandler {
   }
 
   void _checkDir() {
-    var dir = new Directory(_root.root);
+    var dir = new Directory(_root);
     if (!dir.existsSync()) {
-      print("Root path does not exist or is not a directory");
+      print("Root path does not exist or is not a directory: " + _root);
       exit(-1);
     }
   }
@@ -96,10 +96,8 @@ class StaticFileHandler {
 
     dir.list().listen(
         (entity) {
-          String name = basename(entity.path);
-          Builder hrefBuilder = new Builder(root: request.uri.path);
-          String href = hrefBuilder.join(name);
-          //Path href = new Path(request.uri.path).append(name);
+          String name = path.basename(entity.path);
+          String href = path.join(request.uri.path, name);
           response.write("<li><a href='$href'>$name</a></li>");
         },
         onDone: () {
@@ -178,7 +176,7 @@ class StaticFileHandler {
         response.headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
         response.headers.set(HttpHeaders.LAST_MODIFIED, lastModified);
 
-        String ext = extension(file.path);
+        String ext = path.extension(file.path);
         if (_extToContentType.containsKey(ext.toLowerCase())) {
           response.headers.contentType = ContentType.parse(_extToContentType[ext.toLowerCase()]);
         }
@@ -214,27 +212,26 @@ class StaticFileHandler {
   }
 
   _resolvePath(String uriPath) {
-    Builder builder = new Builder(root: absolute(_root.root));
     var decodedUri = Uri.decodeComponent(uriPath);
-    var root = rootPrefix(decodedUri);
-    var parts = split(decodedUri);
+    var root = path.rootPrefix(decodedUri);
+    var parts = path.split(decodedUri);
 
     if (parts.isNotEmpty && parts.first == root) {
       parts.removeAt(0);
     }
 
     parts.removeWhere((e) => e.isEmpty);
-    String path;
+    String retPath;
     if (!parts.isEmpty) {
       var paths = [];
-      paths.add(builder.root);
+      paths.add(_root);
       paths.addAll(parts);
-      path = joinAll(paths);
+      retPath = path.joinAll(paths);
     } else {
-      path = builder.root;
+        retPath = _root;
     }
 
-    return path;
+    return retPath;
   }
 
   /**
@@ -243,30 +240,30 @@ class StaticFileHandler {
   void handleRequest(HttpRequest request) {
     request.response.done.catchError(_errorHandler);
 
-    if (split(request.uri.path).contains('..')) {
+    if (path.split(request.uri.path).contains('..')) {
       // Invalid path.
       request.response.statusCode = HttpStatus.FORBIDDEN;
       request.response.close();
       return;
     }
 
-    String path = _resolvePath(request.uri.path);
+    String uriPath = _resolvePath(request.uri.path);
 
-    FileSystemEntity.type(path)
+    FileSystemEntity.type(uriPath)
     .then((type) {
       switch (type) {
         case FileSystemEntityType.FILE:
           // If file, serve as such.
-          _serveFile(new File(path), request);
+          _serveFile(new File(uriPath), request);
           break;
 
         case FileSystemEntityType.DIRECTORY:
           // If directory, serve as such.
-          var index = join(path, "index.html");
+          var index = path.join(uriPath, "index.html");
           if (new File(index).existsSync()) {
             _serveFile(new File(index), request);
           } else {
-            _serveDir(new Directory(path), request);
+            _serveDir(new Directory(uriPath), request);
           }
           break;
 
