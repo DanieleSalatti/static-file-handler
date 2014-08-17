@@ -19,26 +19,27 @@ class StaticFileHandler {
       set maxAge(num value) => _maxAge = (value >= 0) ? value : 0;
 
   final _extToContentType = {
-    "bz"      : "application/x-bzip",
-    "bz2"     : "application/x-bzip2",
-    "dart"    : "application/dart",
-    "exe"     : "application/octet-stream",
-    "gif"     : "image/gif",
-    "gz"      : "application/x-gzip",
-    "html"    : "text/html; charset=utf-8",  // Assumes UTF-8 files.
-    "jpg"     : "image/jpeg",
-    "js"      : "application/javascript",
-    "json"    : "application/json",
-    "mp3"     : "audio/mpeg",
-    "mp4"     : "video/mp4",
-    "pdf"     : "application/pdf",
-    "png"     : "image/png",
-    "tar.gz"  : "application/x-tar",
-    "tgz"     : "application/x-tar",
-    "txt"     : "text/plain; charset=utf-8",  // Assumes UTF-8 files.
-    "webp"    : "image/webp",
-    "webm"    : "video/webm",
-    "zip"     : "application/zip"
+    ".bz"      : "application/x-bzip",
+    ".bz2"     : "application/x-bzip2",
+    ".css"     : "text/css",
+    ".dart"    : "application/dart",
+    ".exe"     : "application/octet-stream",
+    ".gif"     : "image/gif",
+    ".gz"      : "application/x-gzip",
+    ".html"    : "text/html; charset=utf-8",  // Assumes UTF-8 files.
+    ".jpg"     : "image/jpeg",
+    ".js"      : "application/javascript",
+    ".json"    : "application/json",
+    ".mp3"     : "audio/mpeg",
+    ".mp4"     : "video/mp4",
+    ".pdf"     : "application/pdf",
+    ".png"     : "image/png",
+    ".tar.gz"  : "application/x-tar",
+    ".tgz"     : "application/x-tar",
+    ".txt"     : "text/plain; charset=utf-8",  // Assumes UTF-8 files.
+    ".webp"    : "image/webp",
+    ".webm"    : "video/webm",
+    ".zip"     : "application/zip"
   };
 
   /**
